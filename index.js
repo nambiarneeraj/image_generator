@@ -3,12 +3,18 @@ import { createCanvas, loadImage, registerFont } from 'canvas';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
+cloudinary.config({
+  cloud_name: 'di7awnua6',
+  api_key: '775163825915348',
+  api_secret: 'nr2JFH4xUGba7nIj9XYyDCv7H04'
+});
 
 app.use(express.json());
 
@@ -121,15 +127,29 @@ app.post('/generate-image', async (req, res) => {
     drawMultilineText(ctx, text, centerX, centerY - 15, 52, boardWidth - 60);
 
     const filename = `simon-text-${Date.now()}.png`;
-    const outputPath = path.join(OUTPUT_DIR, filename);
-    fs.writeFileSync(outputPath, canvas.toBuffer('image/png'));
-    console.log(`[INFO] Image saved to: ${outputPath}`);
+const tempPath = path.join(OUTPUT_DIR, filename);
+const buffer = canvas.toBuffer('image/png');
 
-    res.json({
-      message: 'Image generated successfully',
-      file: filename,
-      path: `/output/${filename}`
-    });
+// Save temporarily
+fs.writeFileSync(tempPath, buffer);
+
+// Upload to Cloudinary
+const uploadResult = await cloudinary.uploader.upload(tempPath, {
+  folder: 'Simon_Images',  // Optional Cloudinary folder
+  public_id: filename.replace('.png', ''), 
+  resource_type: 'image'
+});
+
+// Optionally delete local file after upload
+fs.unlinkSync(tempPath);
+
+console.log(`[INFO] Image uploaded to Cloudinary: ${uploadResult.secure_url}`);
+
+res.json({
+  message: 'Image uploaded successfully',
+  cloudinary_url: uploadResult.secure_url,
+  public_id: uploadResult.public_id
+});
   } catch (err) {
     console.error(`[ERROR] Image generation failed:`, err);
     res.status(500).send('Image generation failed');
