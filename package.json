@@ -1,0 +1,20 @@
+{
+  "name": "dynamic-image-generator",
+  "version": "1.0.0",
+  "description": "A Node.js service to generate images with custom text using canvas.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "nambiarneeraj",
+  "license": "MIT",
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "express": "^4.18.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
