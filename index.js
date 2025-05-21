@@ -99,8 +99,8 @@ app.post('/generate-image', async (req, res) => {
     }
 
     const image = await loadImage(imagePath);
-    const canvas = createCanvas(image.width, image.height);
-    const ctx = canvas.getContext('2d');
+    let canvas = createCanvas(image.width, image.height);
+    let ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, image.width, image.height);
 
     const boardX = 200;
@@ -126,35 +126,49 @@ app.post('/generate-image', async (req, res) => {
 
     drawMultilineText(ctx, text, centerX, centerY - 15, 52, boardWidth - 60);
 
-    const filename = `simon-text-${Date.now()}.png`;
-const tempPath = path.join(OUTPUT_DIR, filename);
-const buffer = canvas.toBuffer('image/png');
+    // ⬇️ Optional resize logic
+    const MAX_WIDTH = 1080;
+    const scale = image.width > MAX_WIDTH ? MAX_WIDTH / image.width : 1;
 
-// Save temporarily
-fs.writeFileSync(tempPath, buffer);
+    if (scale < 1) {
+      const resizedCanvas = createCanvas(canvas.width * scale, canvas.height * scale);
+      const resizedCtx = resizedCanvas.getContext('2d');
+      resizedCtx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
+      canvas = resizedCanvas;
+      ctx = resizedCtx;
+    }
 
-// Upload to Cloudinary
-const uploadResult = await cloudinary.uploader.upload(tempPath, {
-  folder: 'Simon_Images',  // Optional Cloudinary folder
-  public_id: filename.replace('.png', ''), 
-  resource_type: 'image'
-});
+    const filename = `simon-text-${Date.now()}.jpeg`;
+    const tempPath = path.join(OUTPUT_DIR, filename);
+    const buffer = canvas.toBuffer('image/jpeg', { quality: 0.7 }); // JPEG w/ compression
 
-// Optionally delete local file after upload
-fs.unlinkSync(tempPath);
+    fs.writeFileSync(tempPath, buffer);
 
-console.log(`[INFO] Image uploaded to Cloudinary: ${uploadResult.secure_url}`);
+    const uploadResult = await cloudinary.uploader.upload(tempPath, {
+      folder: 'Simon_Images',
+      public_id: filename.replace('.jpeg', ''),
+      resource_type: 'image',
+      transformation: [
+        { quality: 'auto', fetch_format: 'auto' }
+      ]
+    });
 
-res.json({
-  message: 'Image uploaded successfully',
-  cloudinary_url: uploadResult.secure_url,
-  public_id: uploadResult.public_id
-});
+    fs.unlinkSync(tempPath);
+
+    console.log(`[INFO] Image uploaded to Cloudinary: ${uploadResult.secure_url}`);
+
+    res.json({
+      message: 'Image uploaded successfully',
+      cloudinary_url: uploadResult.secure_url,
+      public_id: uploadResult.public_id
+    });
+
   } catch (err) {
     console.error(`[ERROR] Image generation failed:`, err);
     res.status(500).send('Image generation failed');
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`[INFO] Server running on http://localhost:${PORT}`);
