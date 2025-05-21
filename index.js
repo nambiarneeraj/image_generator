@@ -63,7 +63,7 @@ function drawMultilineText(ctx, text, x, y, lineHeight, maxWidth = null) {
   const totalHeight = (lines.length - 1) * lineHeight;
   const startY = y - (totalHeight / 2);
 
-  lines.forEach((line, i) => {s
+  lines.forEach((line, i) => {
     ctx.fillText(line.trim(), x, startY + (i * lineHeight));
   });
 
