@@ -92,7 +92,7 @@ app.post('/generate-image', async (req, res) => {
   console.log(`[INFO] Text to draw: "${text}"`);
 
   try {
-    const imagePath = path.join(__dirname, 'templates', 'simon.jpeg');
+    const imagePath = path.join(__dirname, 'templates', 'Template3.jpg');
     if (!fs.existsSync(imagePath)) {
       console.error(`[ERROR] Base image not found at: ${imagePath}`);
       return res.status(404).send('Base image not found');
@@ -103,15 +103,15 @@ app.post('/generate-image', async (req, res) => {
     let ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, image.width, image.height);
 
-    const boardX = 200;
-    const boardY = 370;
-    const boardWidth = 1100;
-    const boardHeight = 2300;
+    const boardX = 330;
+    const boardY = 320;
+    const boardWidth = 600;
+    const boardHeight = 500;
     const centerX = boardX + boardWidth / 2;
     const centerY = boardY + boardHeight / 2;
 
     ctx.fillStyle = '#D32F2F';
-    const testFont = `54px "${fontName}", "Comic Sans MS", "Arial", sans-serif`;
+    const testFont = `40px "${fontName}", "Comic Sans MS", "Arial", sans-serif`;
     ctx.font = testFont;
 
     if (ctx.measureText('Test Font').width === ctx.measureText('Test Font').width) {
