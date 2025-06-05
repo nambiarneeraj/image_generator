@@ -106,7 +106,7 @@ app.post('/generate-image', async (req, res) => {
     const boardX = 330;
     const boardY = 320;
     const boardWidth = 650;
-    const boardHeight = 500;
+    const boardHeight = 520;
     const centerX = boardX + boardWidth / 2;
     const centerY = boardY + boardHeight / 2;
 
